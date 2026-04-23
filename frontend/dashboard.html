@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Finance Analyzer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf for downloading report -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Finance Analyzer</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active"><a href="#" id="nav-dashboard">Dashboard</a></li>
+                <li><a href="#" id="nav-add-expense">Add Expense</a></li>
+                <li><a href="#" id="nav-expenses">View Expenses</a></li>
+                <li><a href="#" id="nav-budget">Budget Settings</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn btn-outline">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-info">
+                    <h1 id="page-title">Dashboard Overview</h1>
+                    <p id="welcome-msg">Welcome back! Here's your financial summary.</p>
+                </div>
+                <div class="header-actions">
+                    <button id="exportBtn" class="btn btn-outline">Export Report (PDF)</button>
+                    <select id="monthFilter" class="glass-select">
+                        <option value="All Time">All Time</option>
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                </div>
+            </header>
+
+            <div id="content-area">
+                <!-- Dashboard View -->
+                <div id="view-dashboard" class="view active">
+                    <!-- Stat Cards -->
+                    <div class="stat-cards">
+                        <div class="card glass gradient-green">
+                            <h3>Remaining Budget</h3>
+                            <h2 id="netWorth">₹0</h2>
+                        </div>
+                        <div class="card glass gradient-blue">
+                            <h3>Total Expenses</h3>
+                            <h2 id="totalExpenses">₹0</h2>
+                        </div>
+                        <div class="card glass gradient-red">
+                            <h3>Target Budget</h3>
+                            <h2 id="targetBudget">Not Set</h2>
+                        </div>
+                    </div>
+
+                    <div class="small-stats">
+                        <div class="card glass small-card">
+                            <span>Total Transactions</span>
+                            <strong id="totalTransactions">0</strong>
+                        </div>
+                        <div class="card glass small-card">
+                            <span>Highest Expense</span>
+                            <strong id="highestExpense">None</strong>
+                        </div>
+                    </div>
+
+                    <!-- Charts Area -->
+                    <div class="charts-container">
+                        <div class="card glass chart-card">
+                            <h3>Category Breakdown</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="pieChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card glass chart-card">
+                            <h3>Spending Overview</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="barChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Expense View -->
+                <div id="view-add-expense" class="view" style="display: none;">
+                    <div class="card glass form-card">
+                        <h3>Add New Expense</h3>
+                        <form id="addExpenseForm">
+                            <div class="form-group">
+                                <label>Amount (₹)</label>
+                                <input type="number" id="expAmount" step="0.01" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <select id="expCategory" required>
+                                        <!-- Will be populated from DB -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Billing Month</label>
+                                    <select id="expMonth" required>
+                                        <option value="January">January</option>
+                                        <option value="February">February</option>
+                                        <option value="March">March</option>
+                                        <option value="April">April</option>
+                                        <option value="May">May</option>
+                                        <option value="June">June</option>
+                                        <option value="July">July</option>
+                                        <option value="August">August</option>
+                                        <option value="September">September</option>
+                                        <option value="October">October</option>
+                                        <option value="November">November</option>
+                                        <option value="December">December</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Transaction Date</label>
+                                <input type="date" id="expDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Note / Description</label>
+                                <input type="text" id="expDesc">
+                            </div>
+                            <button type="submit" class="btn btn-primary full-width">Save Expense</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- View Expenses View -->
+                <div id="view-expenses" class="view" style="display: none;">
+                    <div class="card glass">
+                        <h3>Recent Expenses</h3>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Billing Month</th>
+                                        <th>Category</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expensesTableBody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Settings View -->
+                <div id="view-budget" class="view" style="display: none;">
+                    <div class="card glass form-card">
+                        <h3>Budget Settings</h3>
+                        <p>Set a maximum budget for specific months. You will see remaining budget on your dashboard.</p>
+                        <form id="budgetForm">
+                            <div class="form-group">
+                                <label>Target Month</label>
+                                <select id="budgetMonth" required>
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August">August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Monthly Budget Amount (₹)</label>
+                                <input type="number" id="budgetAmount" step="0.01" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary full-width">Update Budget</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+    
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
